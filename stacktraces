@@ -24,6 +24,8 @@ This page lists the nicest stacktraces produced by Mirage during the hackathon.
   Try `mirage configure --help' or `mirage --help' for more information.
   ```
 
+  Assigned issue [#461](https://github.com/mirage/mirage/issues/461).
+
 - While running Canopy on Unix, while syncing the repository using Irmin:
 
   ```
