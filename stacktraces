@@ -1,0 +1,23 @@
+---
+title: Stacktraces
+author: Camels
+---
+This page lists the nicest stacktraces produced by Mirage during the hackathon.
+
+- When contacting the gateway (`10.0.0.1`) to reach a dns resolver `8.8.8.8`:
+```
+ARP: retrying 10.0.0.1 (n=3)
+ARP: transmitting probe -> 10.0.0.1
+IP.output: arp timeout to gw 8.8.8.8
+Fatal error: exception Ipv4.Make(Ethif)(Arpv4).Routing.No_route_
+```
+
+In the error message, it looks like the gw is set to `8.8.8.8`.
+
+- Syntax Error in your config.ml... leads to:
+```
+$ mirage configure --unix --net=socket
+mirage: unknown option `--unix'.
+Usage: mirage configure [OPTION]...
+Try `mirage configure --help' or `mirage --help' for more information.
+```
