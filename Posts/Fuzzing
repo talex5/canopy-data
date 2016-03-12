@@ -1,6 +1,7 @@
 ---
-title: Fuzzing OCaml
-author: author
+title: AFL + MirageOS = <3
+author: yomimono (Mindy Preston)
+abstract: fuzzing OCaml programs (including MirageOS ones) with afl-fuzz
 ---
 
 [American Fuzzy Lop, or AFL](http://lcamtuf.coredump.cx/afl/), is a clever tool for discovering crashes in programs dependent on user input.  AFL uses compiler instrumentation to track the execution path a program takes and attempt to discover bad input handling.  Recently, [Stephen Dolan](https://github.com/stedolan) created a patch for the OCaml compiler that allows us to use this instrumentation on OCaml programs -- including those using MirageOS libraries!
@@ -66,13 +67,15 @@ tcpdump: unknown file format
 
 ## Let's Fix It!
 
-Now that we have some problem data, we can try to fix it.  Let's get some program context into `utop`, so we can inspect what's going on.  I've elided some setup, but [the full content is available at this gist](TODO).
+Now that we have some problem data, we can try to fix it.  Let's get some program context into `utop`, so we can inspect what's going on.  I've elided some setup for clarity, but below you'll see the general idea.
 
 ```
 example-unikernels/read_pcap $ utop
 #trace Pcap.LE.get_pcap_packet_incl_len ;;
-Pcap.LE.get_pcap_packet_incl_len is now traced.                                                                              ─( 00:16:44 )─< command 27 >──────────────────────────────────────────────────────────────────────────────────{ counter: 0 }─utop # U.start console fs () ;;
-Kvro_fs_unix.read <-- <abstr>                                                                                                Kvro_fs_unix.read --> <fun>                                                                                                  Kvro_fs_unix.read* <-- "id:000000,sig:06,src:000000,op:flip1,pos:32"                                                         
+Pcap.LE.get_pcap_packet_incl_len is now traced.                                                      utop # U.start console fs () ;;
+Kvro_fs_unix.read <-- <abstr>
+Kvro_fs_unix.read --> <fun>
+Kvro_fs_unix.read* <-- "id:000000,sig:06,src:000000,op:flip1,pos:32"
 Kvro_fs_unix.read* --> <fun>
 Kvro_fs_unix.read** <-- 0
 Kvro_fs_unix.read** --> <fun>
