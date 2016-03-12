@@ -21,3 +21,13 @@ mirage: unknown option `--unix'.
 Usage: mirage configure [OPTION]...
 Try `mirage configure --help' or `mirage --help' for more information.
 ```
+
+
+- While running Canopy on Unix, while syncing the repository using Irmin:
+```
+Fatal error: exception Unix.Unix_error(Unix.EINVAL, "select", "")
+Raised by primitive operation at file "src/unix/lwt_engine.ml", line 371, characters 26-60
+Called from file "src/unix/lwt_engine.ml", line 312, characters 8-39
+Called from file "src/unix/lwt_main.ml", line 41, characters 8-82
+Called from file "main.ml", line 185, characters 5-10
+```
