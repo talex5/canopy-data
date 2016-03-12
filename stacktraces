@@ -5,31 +5,32 @@ author: Camels
 This page lists the nicest stacktraces produced by Mirage during the hackathon.
 
 - When contacting the gateway (`10.0.0.1`) to reach a dns resolver `8.8.8.8`:
-```
-ARP: retrying 10.0.0.1 (n=3)
-ARP: transmitting probe -> 10.0.0.1
-IP.output: arp timeout to gw 8.8.8.8
-Fatal error: exception Ipv4.Make(Ethif)(Arpv4).Routing.No_route_
-```
 
-In the error message, it looks like the gw is set to `8.8.8.8`.
+  ```
+  ARP: retrying 10.0.0.1 (n=3)
+  ARP: transmitting probe -> 10.0.0.1
+  IP.output: arp timeout to gw 8.8.8.8
+  Fatal error: exception Ipv4.Make(Ethif)(Arpv4).Routing.No_route_
+  ```
 
-- Syntax Error in your config.ml... leads to:
-```
-$ mirage configure --unix --net=socket
-mirage: unknown option `--unix'.
-Usage: mirage configure [OPTION]...
-Try `mirage configure --help' or `mirage --help' for more information.
-```
+  In the error message, it looks like the gw is set to `8.8.8.8`.
+
+  - Syntax Error in your config.ml... leads to:
+
+    ```
+    $ mirage configure --unix --net=socket
+    mirage: unknown option `--unix'.
+    Usage: mirage configure [OPTION]...
+    Try `mirage configure --help' or `mirage --help' for more information.
+    ```
 
 
+- While running Canopy on Unix, while syncing the repository using Irmin:
 
-While running Canopy on Unix, while syncing the repository using Irmin:
-
-```
-Fatal error: exception Unix.Unix_error(Unix.EINVAL, "select", "")
-Raised by primitive operation at file "src/unix/lwt_engine.ml", line 371, characters 26-60
-Called from file "src/unix/lwt_engine.ml", line 312, characters 8-39
-Called from file "src/unix/lwt_main.ml", line 41, characters 8-82
-Called from file "main.ml", line 185, characters 5-10
-```
+  ```
+  Fatal error: exception Unix.Unix_error(Unix.EINVAL, "select", "")
+  Raised by primitive operation at file "src/unix/lwt_engine.ml", line 371, characters 26-60
+  Called from file "src/unix/lwt_engine.ml", line 312, characters 8-39
+  Called from file "src/unix/lwt_main.ml", line 41, characters 8-82
+  Called from file "main.ml", line 185, characters 5-10
+  ```
