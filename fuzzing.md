@@ -1,0 +1,159 @@
+[American Fuzzy Lop, or AFL](http://lcamtuf.coredump.cx/afl/), is a clever tool for discovering crashes in programs dependent on user input.  AFL uses compiler instrumentation to track the execution path a program takes and attempt to discover bad input handling.  Recently, [Stephen Dolan](https://github.com/stedolan) created a patch for the OCaml compiler that allows us to use this instrumentation on OCaml programs -- including those using MirageOS libraries!
+
+## How to Get AFL
+
+To build OCaml programs such that AFL will be able to infer things from their behavior:
+
+* make `opam` aware of the 4.02.3+afl OCaml compiler branch.  Currently you'll need to add a remote for it, although hopefully [there will be a more official branch soon](https://github.com/ocaml/ocaml/pull/504).  In obtain the meantime, `opam remote add ocamllabs -k git https://github.com/ocamllabs/opam-repo-dev` and then `opam update`.
+* install the compiler with `opam sw install 4.02.3+afl`. This will give you a new [opam switch](https://opam.ocaml.org/doc/Usage.html) in which whatever we compile will generate results with `afl-fuzz`.
+
+## How Do I Fuzz Program
+
+I was really excited about this, and wanted to start right away on a relatively simple program which was a nice fit for the requirement of taking file input -- a small wrapper around [`mirage-net-pcap`](https://github.com/yomimono/mirage-net-pcap).  `mirage-net-pcap` provides an implementation of the [`V1.NETWORK`](https://github.com/mirage/mirage/blob/caf220efda27dfbf5d90ffcdc5db86e2a39528a0/types/V1.mli#L269) module type that reads from a pcap file, and was itself intended for use in testing the MirageOS network stack (for an example, see this [ARP-implementation testing unikernel](https://github.com/yomimono/example-unikernels/tree/master/arp-tester)).
+
+A very simple unikernel using this library is available [in the read_pcap directory of the example-unikernels repository](https://github.com/yomimono/example-unikernels/tree/master/read_pcap).  After building the unikernel for Unix ([instructions here](https://github.com/yomimono/example-unikernels/tree/master/read_pcap/README.md)), we can execute it:
+
+```
+$ ./mir-read_pcap --file packets.pcap
+$
+```
+
+It's not a very interesting program in its own right, but we can run it with `afl-fuzz` to make it more exciting:
+
+```
+$ mkdir input; mv packets.pcap input
+$ afl-fuzz -i input -f packets.pcap -o fuzz_output ./mir-read_pcap
+```
+
+Now AFL will begin fuzzing our input file and will do its best to find some crashes in our application.  Very shortly, three are found!  AFL saves them for us in the `fuzz_output` directory, so we can go check them out.
+
+```
+fuzz_output/crashes$ ls
+id:000000,sig:06,src:000000,op:flip1,pos:32  id:000002,sig:06,src:000000,op:flip1,pos:264
+id:000001,sig:06,src:000000,op:flip1,pos:35  README.txt
+```
+
+And sure enough, our output with these inputs isn't anything to be proud of:
+
+```
+$ ./mir-read_pcap --file id\:000000\,sig\:06\,src\:000000\,op\:flip1\,pos\:32 
+Fatal error: exception (Invalid_argument "Cstruct.sub: [0,4096](4096) off=0 len=-128660")
+Raised at file "src/core/lwt.ml", line 789, characters 22-23
+Called from file "src/unix/lwt_main.ml", line 34, characters 8-18
+Called from file "main.ml", line 69, characters 5-10
+Aborted
+```
+
+What does another program that wants to interpret pcap files make of them?
+
+```
+fuzz_output/crashes$ for p in `ls`; do tcpdump -r $p; done
+reading from file id:000000,sig:06,src:000000,op:flip1,pos:32, link-type EN10MB (Ethernet)
+17:02:18.897491 ARP, Request who-has 10.137.2.1 (Broadcast) tell mirageos, length 28
+tcpdump: pcap_loop: bogus savefile header
+reading from file id:000001,sig:06,src:000000,op:flip1,pos:32, link-type EN10MB (Ethernet)
+17:02:18.897491 [|ether]
+tcpdump: pcap_loop: bogus savefile header
+reading from file id:000002,sig:06,src:000000,op:flip1,pos:33, link-type EN10MB (Ethernet)
+tcpdump: pcap_loop: truncated dump file; tried to read 32810 captured bytes, only got 640
+tcpdump: unknown file format
+```
+
+## Let's Fix It!
+
+Now that we have some problem data, we can try to fix it.  Let's get some program context into `utop`, so we can inspect what's going on.  I've elided some setup, but [the full content is available at this gist](TODO).
+
+```
+example-unikernels/read_pcap $ utop
+#trace Pcap.LE.get_pcap_packet_incl_len ;;
+Pcap.LE.get_pcap_packet_incl_len is now traced.                                                                              ─( 00:16:44 )─< command 27 >──────────────────────────────────────────────────────────────────────────────────{ counter: 0 }─utop # U.start console fs () ;;
+Kvro_fs_unix.read <-- <abstr>                                                                                                Kvro_fs_unix.read --> <fun>                                                                                                  Kvro_fs_unix.read* <-- "id:000000,sig:06,src:000000,op:flip1,pos:32"                                                         
+Kvro_fs_unix.read* --> <fun>
+Kvro_fs_unix.read** <-- 0
+Kvro_fs_unix.read** --> <fun>
+Kvro_fs_unix.read*** <-- 24
+Kvro_fs_unix.read*** --> <abstr>
+Cstruct.sub <-- {Cstruct.buffer = <abstr>; off = 0; len = 4096}
+Cstruct.sub --> <fun>
+Cstruct.sub* <-- 0
+Cstruct.sub* --> <fun>
+Cstruct.sub** <-- 24
+Cstruct.sub** --> {Cstruct.buffer = <abstr>; off = 0; len = 24}
+U.P.listen <-- <abstr>
+U.P.listen --> <fun>
+U.P.listen* <-- <fun>
+Kvro_fs_unix.read <-- <abstr>
+Kvro_fs_unix.read --> <fun>
+Kvro_fs_unix.read* <-- "id:000000,sig:06,src:000000,op:flip1,pos:32"
+Kvro_fs_unix.read* --> <fun>
+Kvro_fs_unix.read** <-- 24
+Kvro_fs_unix.read** --> <fun>
+Kvro_fs_unix.read*** <-- 16
+Kvro_fs_unix.read*** --> <abstr>
+U.P.listen* --> <abstr>
+Cstruct.sub <-- {Cstruct.buffer = <abstr>; off = 0; len = 4096}
+Cstruct.sub --> <fun>
+Cstruct.sub* <-- 0
+Cstruct.sub* --> <fun>
+Cstruct.sub** <-- 16
+Cstruct.sub** --> {Cstruct.buffer = <abstr>; off = 0; len = 16}
+Pcap.LE.get_pcap_packet_incl_len <-- {Cstruct.buffer = <abstr>; off = 0; len = 16}
+Pcap.LE.get_pcap_packet_incl_len --> 170l
+Kvro_fs_unix.read <-- <abstr>
+Kvro_fs_unix.read --> <fun>
+Kvro_fs_unix.read* <-- "id:000000,sig:06,src:000000,op:flip1,pos:32"
+Kvro_fs_unix.read* --> <fun>
+Kvro_fs_unix.read** <-- 40
+Kvro_fs_unix.read** --> <fun>
+Kvro_fs_unix.read*** <-- 170
+Kvro_fs_unix.read*** --> <abstr>
+Cstruct.sub <-- {Cstruct.buffer = <abstr>; off = 0; len = 4096}
+Cstruct.sub --> <fun>
+Cstruct.sub* <-- 0
+Cstruct.sub* --> <fun>
+Cstruct.sub** <-- 170
+Cstruct.sub** --> {Cstruct.buffer = <abstr>; off = 0; len = 170}
+U.P.listen <-- <abstr>
+U.P.listen --> <fun>
+U.P.listen* <-- <fun>
+Kvro_fs_unix.read <-- <abstr>
+Kvro_fs_unix.read --> <fun>
+Kvro_fs_unix.read* <-- "id:000000,sig:06,src:000000,op:flip1,pos:32"
+Kvro_fs_unix.read* --> <fun>
+Kvro_fs_unix.read** <-- 210
+Kvro_fs_unix.read** --> <fun>
+Kvro_fs_unix.read*** <-- 16
+Kvro_fs_unix.read*** --> <abstr>
+U.P.listen* --> <abstr>
+Cstruct.sub <-- {Cstruct.buffer = <abstr>; off = 0; len = 4096}
+Cstruct.sub --> <fun>
+Cstruct.sub* <-- 0
+Cstruct.sub* --> <fun>
+Cstruct.sub** <-- 16
+Cstruct.sub** --> {Cstruct.buffer = <abstr>; off = 0; len = 16}
+Pcap.LE.get_pcap_packet_incl_len <-- {Cstruct.buffer = <abstr>; off = 0; len = 16}
+Pcap.LE.get_pcap_packet_incl_len --> -128660l
+Kvro_fs_unix.read <-- <abstr>
+Kvro_fs_unix.read --> <fun>
+Kvro_fs_unix.read* <-- "id:000000,sig:06,src:000000,op:flip1,pos:32"
+Kvro_fs_unix.read* --> <fun>
+Kvro_fs_unix.read** <-- 226
+Kvro_fs_unix.read** --> <fun>
+Kvro_fs_unix.read*** <-- -128660
+Kvro_fs_unix.read*** --> <abstr>
+Cstruct.sub <-- {Cstruct.buffer = <abstr>; off = 0; len = 4096}
+Cstruct.sub --> <fun>
+Cstruct.sub* <-- 0
+Cstruct.sub* --> <fun>
+Cstruct.sub** <-- -128660
+Cstruct.sub** raises
+  Invalid_argument
+     "Cstruct.sub: [0,4096](4096) off=0 len=-128660Cstruct.sub: [0,4096](4096) off=0 len=-128660Cstruct.sub: [0,4096](4096) off=0 len=-128660Cstruct.sub: [0,4096](4096) off=0 len=-128660Cstruct.sub: [0,4096](4096) off=0 len=-128660"
+     Exception:
+     Invalid_argument
+      "Cstruct.sub: [0,4096](4096) off=0 len=-128660Cstruct.sub: [0,4096](4096) off=0 len=-128660Cstruct.sub: [0,4096](4096) off=0 len=-128660Cstruct.sub: [0,4096](4096) off=0 len=-128660Cstruct.sub: [0,4096](4096) off=0 len=-128660".
+```
+
+There are a couple of interesting things in the end of this trace.  We seem to be calling `Kvro_fs_unix.read` with an argument for our filename, then `226` (the offset into the file at which our packet begins), then `-128660` (how many bytes we'd like to read).  Of course, a negative value isn't sensible as a third argument, but it looks like `Kvro_fs_unix.read` then calls `Cstruct.sub`.  `Cstruct.sub` correctly detects that `-128660` isn't a reasonable number of bytes to request and generated the `Invalid_argument` exception that terminates our program and alerts AFL to our problem.
+
+`mirage-fs-unix`, the library that provides `Kvro_fs_direct`, has a test suite.  We can add a call to `read` with a negative number of bytes, and sure enough this test fails.  Write a small patch, see that the tests then succeed, pin it and rebuild the unikernel.  Run it against one of the outputs that previously crashed it and yay, it's not broken anymore!
