@@ -1,3 +1,8 @@
+---
+title: Fuzzing OCaml
+author: author
+---
+
 [American Fuzzy Lop, or AFL](http://lcamtuf.coredump.cx/afl/), is a clever tool for discovering crashes in programs dependent on user input.  AFL uses compiler instrumentation to track the execution path a program takes and attempt to discover bad input handling.  Recently, [Stephen Dolan](https://github.com/stedolan) created a patch for the OCaml compiler that allows us to use this instrumentation on OCaml programs -- including those using MirageOS libraries!
 
 ## How to Get AFL
