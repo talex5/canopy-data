@@ -35,3 +35,12 @@ This page lists the nicest stacktraces produced by Mirage during the hackathon.
   Called from file "src/unix/lwt_main.ml", line 41, characters 8-82
   Called from file "main.ml", line 185, characters 5-10
   ```
+
+- When running `mirage configure -t unix` in a directory without `config.ml`:
+
+  ```
+  $ mirage configure -t unix
+  mirage: unknown option `-t'.
+  Usage: mirage configure [OPTION]... 
+  Try `mirage configure --help' or `mirage --help' for more information.
+  ```
