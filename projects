@@ -1,0 +1,13 @@
+---
+title: Potential projects
+author: us
+---
+If you want to work on a specific project/library and are looking for collaborators, please add
+
+* fix mirage error reporting and handling
+* write unikernel deployment scripts using ocaml-aws (yomimono)
+* caching web proxy
+* NAT library improvements/1.0 release (yomimono)
+* Irmin-powered community blog
+* ocaml-github-powered mirageos library readme scraper
+* [Git server-side implementation](https://github.com/mirage/ocaml-git/issues/15)
