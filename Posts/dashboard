@@ -1,0 +1,17 @@
+---
+title: Mirage OS Dashboard
+author: rudenoise (Joel Hughes)
+abstract: A dashboard displaying useful data from Mirage OS project and its related libraries.
+---
+
+Mirage OS is continually updating/improving, keeping track of these changes is tricky.
+
+The aim of this project is to create a dashboard that shows data
+about: most used libraries, releases, commits since last release,
+top contributors, build status (release, current...), dependencies,
+etc...
+
+Let me know what else would be useful, tools I can leverage and
+what I'm doing wrong!
+
+The repo: [mirage-dashboard](https://github.com/rudenoise/mirage-dashboard).
