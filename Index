@@ -8,10 +8,14 @@ There is code of this webservice, [canopy](https://github.com/Engil/canopy).
 Feel free to add content (by creating a file in [this
 repository](https://github.com/hannesm/canopy-data)).
 
-Project ideas at [Pioneer Projects](https://github.com/mirage/mirage-www/wiki/Pioneer-Projects) and [elsewhere](https://github.com/mirage/marrakech2016/wiki/Potential-Projects)
-
-We hang out in the sun and on IRC in `#mirage` (`irc.freenode.net`).
-
-Lunch at 2, dinner at 7.  Water behind the counter, fruits on the counter.  Help yourself.
-
-We need to clean the dishes after lunch and dinner ourselves.  Please organise.
+- Please switch of wireless on your phone, then the laptops will get more waves.
+- Circle at 1 on the roof terrace, Lunch at 2, dinner at 7.
+- We need to clean the dishes after lunch and dinner ourselves.  Please organise.
+- Projects are at [Projects](http://canopy.mirage.io/Wiki/Projects).
+- [!Saturday plan](https://pbs.twimg.com/media/CdbOzuBWIAAOmnr.jpg:large)
+- We hang out in the sun and on IRC in `#mirage` (`irc.freenode.net`).
+- Water behind the counter, fruits on the counter.  Help yourself.  If there is none, buy some.
+- Towels can be rented by Kashia, ask her.
+- DHCP server doesn't like us (Maroc Telecom Router at http://192.168.1.1, user admin, password f7f5 (really slow)
+- Manual network configuration: `ifconfig wlan0 192.168.1.XX netmask 255.255.255.0 ; route add default gw 192.168.1.1 ` (`gw` only needed on linux).  `XX` is in the range 2-254, pick one at random for your host.
+- Nameserver you can add `nameserver 141.1.1.1` in your `/etc/resolv.conf` (where is a mirage resolver?)
