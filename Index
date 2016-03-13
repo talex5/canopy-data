@@ -15,7 +15,7 @@ repository](https://github.com/hannesm/canopy-data)).
 - [![Saturday plan](https://pbs.twimg.com/media/CdbOzuBWIAAOmnr.jpg)](https://pbs.twimg.com/media/CdbOzuBWIAAOmnr.jpg:large)
 - We hang out in the sun and on IRC in `#mirage` (`irc.freenode.net`).
 - Water behind the counter, fruits on the counter.  Help yourself.  If there is none, buy some.
-- Towels can be rented by Kashia, ask her.
+- Towels can be rented by Kasia, ask her.
 - DHCP server doesn't like us (Maroc Telecom Router at http://192.168.1.1, user admin, password f7f5 (really slow)
 - Manual network configuration: `ifconfig wlan0 192.168.1.XX netmask 255.255.255.0 ; route add default gw 192.168.1.1 ` (`gw` only needed on linux).  `XX` is in the range 2-254, pick one at random for your host.
 - Nameserver you can add `nameserver 141.1.1.1` in your `/etc/resolv.conf` (where is a mirage resolver?)
