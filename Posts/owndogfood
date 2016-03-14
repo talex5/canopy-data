@@ -1,0 +1,22 @@
+---
+title: NUC Wifi with our own DHCP
+author: haesbaert (Christiano Haesbaert)
+abstract: Eating our own dog food for fun and profit.
+---
+
+## Change to `nuc1 wifi`
+
+Network `nuc1 wifi` is running [charrua dhcp server](http://github.com/haesbaert/charrua-core) 
+as an unikernel, we had problems with the hostel router and everyone should
+change to `nuc1 wifi`.
+
+This is one of the few oportunities I get to test the dhcp library in a larger
+environment, so by using it, you're already contributing to mirage. The larger
+the user base and user cases, more bugs we find, so far we've found none, which
+is cool too.
+
+If you run into any issues just come and kick me hard, even if I'm sleeping,
+seriously.
+
+You can check the console output by connecting to `192.168.1.37` and `xl
+console dhcp`.
