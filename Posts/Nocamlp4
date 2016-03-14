@@ -1,0 +1,20 @@
+---
+title: Bye-bye camlp4
+author: samoht Thomas Gazagnaire)
+abstract: Removing Camlp4 from MirageOS
+---
+
+My goal yesterday was to compile `mirage-www` without `camlp4`.  That
+goal is not fully reached yet, but at least the `mirage` command-line
+tool will not force a dependency to camlp4 anymore and the HTML
+templating engine (CoW) is now camlp4-free. To do so, I've just have
+released [cow.2.0.0](https://github.com/mirage/ocaml-cow) which now
+defines (untyped) XML/HTML/JSON combinators that
+[cowabloga](https://github.com/mirage/cowabloga) and
+[mirage-www](https://github.com/mirage/mirage-www) now use. The result
+it now online at [mirage.io](https://mirage.io) (if you see any style
+breaks, please report them!).
+
+There are still many libraries to port, but most of the ports should be easy
+using the [camlp4-to-ppx](https://github.com/janestreet/camlp4-to-ppx)
+converter. Pull-requests are welcome!
