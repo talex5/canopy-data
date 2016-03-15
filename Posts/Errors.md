@@ -75,7 +75,7 @@ After (stack no longer takes a console and logging is enabled):
 
     let () =
       register "network" [
-	with_mirage_logs (main $ default_console $ stack)
+        with_mirage_logs (main $ default_console $ stack)
       ]
 
 
